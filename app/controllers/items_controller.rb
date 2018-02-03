@@ -36,9 +36,9 @@ class ItemsController < ApplicationController
     key = key[0..(key.length-2)]
     user = current_user.email
 
-    aaws = "AKIAJWYZXQ57QND7DNEA"
-    akey = "iNDLIrTVK84d/qxVHAWfra97nfV9eOMLaYOBMexf"
-    aid = "mamegomari-22"
+    aaws = "AKIAJXEG3LEGXBVPYUAA"
+    akey = "jHAewcR7wGDmr6sEmHfQNYD6z4WCWfvJUACAMy7M"
+    aid = "mamegomari10e-22"
 
     Amazon::Ecs.configure do |options|
       options[:AWS_access_key_id] = aaws
