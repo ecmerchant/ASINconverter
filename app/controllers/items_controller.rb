@@ -3,6 +3,7 @@ class ItemsController < ApplicationController
   require 'nokogiri'
   require 'open-uri'
   require 'amazon/ecs'
+  require 'peddler'
   require 'uri'
 
   before_action :authenticate_user!
@@ -19,80 +20,52 @@ class ItemsController < ApplicationController
     list = body[1]
     pnum = body[2]
 
-    key = ""
+    key = []
 
-    for j in 0..9
-      if (j + 10 * (pnum - 1)) > list.length-1 then
+    for j in 0..4
+      if (j + 5 * (pnum - 1)) > list.length-1 then
         break
       end
-      if list[j + 10 * (pnum - 1)][0] == "" then
+      if list[j + 5 * (pnum - 1)][0] == "" then
         break
       end
 
-      ta = list[j + 10 * (pnum - 1)][0]
-      key = key + ta + ","
+      ta = list[j + 5 * (pnum - 1)][0]
+      key[j] = ta
     end
 
-    key = key[0..(key.length-2)]
     user = current_user.email
 
-    aaws = "AKIAJXEG3LEGXBVPYUAA"
-    akey = "jHAewcR7wGDmr6sEmHfQNYD6z4WCWfvJUACAMy7M"
-    aid = "mamegomari10e-22"
+    saws = ENV["AWS_ACCESS_KEY_ID"]
+    skey = ENV["AWS_SECRET_ACCESS_KEY"]
+    sid = "A3449AXENJUW3T"
+    logger.debug(saws)
+    logger.debug(skey)
 
-    Amazon::Ecs.configure do |options|
-      options[:AWS_access_key_id] = aaws
-      options[:AWS_secret_key] = akey
-      options[:associate_tag] = aid
-    end
+    client = MWS.products(
+      primary_marketplace_id: "A1VC38T7YXB528",
+      merchant_id: sid,
+      aws_access_key_id: saws,
+      aws_secret_access_key: skey
+    )
 
-    try = 0
-    times = 5
-    if type == "ASIN" then
-      begin
-        aws = Amazon::Ecs.item_lookup(key, {:response_group => 'Large,OfferFull',:country => 'jp'})
-        try += 1
-      rescue
-        sleep(1)
-        retry if try < times
-      end
-    else
-      begin
-        aws = Amazon::Ecs.item_lookup(key, {:IdType => 'EAN', :SearchIndex => 'All',:response_group => 'Large,OfferFull',:country => 'jp'})
-        try += 1
-      rescue
-        sleep(1)
-        retry if try < times
-      end
-    end
+    parser = client.get_matching_product_for_id("JAN", key)
+    doc = Nokogiri::XML(parser.body)
+    doc.remove_namespaces!
+
     res = []
-    k = 0
-    j = 0
-
-    if type == "ASIN" then
-      tch = aws.items.each do |item|
-        jan = item.get('ItemAttributes/EAN')
-        res[k] = jan
-        k += 1
-      end
-    else
-      for j in 0..9
-        if (j + 10 * (pnum - 1)) > list.length-1 then
-          break
-        end
-        if list[j + 10 * (pnum - 1)][0] == "" then
-          break
-        end
-
-        jan = list[j + 10 * (pnum - 1)][0]
-
-        tch = aws.items.each do |item|
-          jan2 = item.get('ItemAttributes/EAN').to_s
-          if jan == jan2 then
-            res[j] = item.get("ASIN").to_s
-          end
-          k += 1
-        end
+    q = 0
+    for tas in key
+      temp = doc.xpath("//GetMatchingProductForIdResult[@Id='" + tas + "']")[0]
+      asin = temp.xpath('.//ASIN')[0]
+      if asin != nil then
+        asin = asin.text
+        res[q] = asin
+        q += 1
+        logger.debug(asin)
+      else
+        res[q] = ""
+        q += 1
       end
     end
 

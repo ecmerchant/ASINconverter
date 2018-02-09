@@ -112,14 +112,14 @@ function repajax(type,pgnum){
         return;
       }
       var org_data = handsontable.getData();
-      var init = (pgnum - 1) * 10;
+      var init = (pgnum - 1) * 5;
       for(var i = 0; i < resData.length; i++){
         org_data[init + i][1] = resData[i];
       }
 
       handsontable.loadData(org_data);
 
-      if(resData.length != 10){
+      if(resData.length != 5){
         document.getElementById("converter").innerText = "変換開始";
         document.getElementById("converter").className = "btn btn-info";
         handsontable.render();
