@@ -1,18 +1,19 @@
 <div class="container">
-  <h2>ユーザのログイン</h2>
-
+  <h2>※これまでご利用いただきましてありがとうございました。<br>新規ツールに立ち上げに伴い、本ツールは閉鎖します。</h2>
+  <br><h2><%= link_to "新規ツールはこちらから", 'http://ec-merchant.com/10352' %></h2>
+  <br>
   <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
     <div class="form-group" style="width:30%">
       <div class="field">
         <%= f.label :email %><br />
-        <%= f.email_field :email, autofocus: true, class:'form-control' %>
+        <%= f.email_field :email, autofocus: true, class:'form-control', disabled: true  %>
       </div>
     </div>
 
     <div class="form-group" style="width:30%">
       <div class="field">
         <%= f.label :password %><br />
-        <%= f.password_field :password, autocomplete: "off", class:'form-control' %>
+        <%= f.password_field :password, autocomplete: "off", class:'form-control', disabled: true  %>
       </div>
     </div>
 
@@ -24,12 +25,14 @@
     <% end -%>
     <div class="form-group" style="width:10%">
       <div class="actions">
-        <%= f.submit "ログイン" , class: 'btn btn-primary' %>
+        <%= f.submit "ログイン" , class: 'btn btn-primary', disabled: true %>
       </div>
     </div>
   <% end %>
 
-  <h4><%= link_to "新規登録はこちら", new_registration_path(resource_name) %></h4>
+
+
+  <br>
 
   <!-- <%= render "devise/shared/links" %> -->
 
